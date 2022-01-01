@@ -23,9 +23,9 @@ page = st_btn_select(('Faults', 'Schedules', 'Corrective Maintenance', 'Utilitie
                      )
 
 #-----------------------------------------------User Authentication-----------------------------------------------
-names = ['wang na', 'wenna']
-usernames = ['wang', 'na']
-passwords = ['password', 'password']
+names = ['wenna', 'Lifei', 'Thiru']
+usernames = ['wenna0306@gmail.com', 'Lifei', 'Thiru']
+passwords = ['password', 'password', 'password']
 
 hashed_passwords = stauth.hasher(passwords).generate()
 
@@ -72,7 +72,7 @@ if authentication_status:
             return pd.read_excel(filename, header=1, index_col='Fault Number', usecols=cols, parse_dates=parse_dates)
 
 
-        df = fetch_file('Fault 2021-12-22 193709.xlsx')
+        df = fetch_file('Fault 2022-01-01 173831.xlsx')
 
         df.columns = df.columns.str.replace(' ', '_')
         df['Time_Acknowledged_mins'] = (df.Fault_Acknowledged_Date - df.Reported_Date)/pd.Timedelta(minutes=1)
@@ -362,7 +362,7 @@ if authentication_status:
                                   annotation_position='bottom right', annotation_font_size=18, annotation_font_color='green')
         fig_daily.update_xaxes(title_text='Date', tickangle=-45, title_font_color=titlefontcolor, tickmode='linear', range=[1, 31],
                                            showgrid=False, gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
-        fig_daily.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, tickmode='linear', showgrid=False,
+        fig_daily.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
                                gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
         fig_daily.update_layout(title='Number of Fault vs Date', plot_bgcolor=plot_bgcolor)
         st.plotly_chart(fig_daily, use_container_width=True)
@@ -977,8 +977,8 @@ if authentication_status:
 
 elif authentication_status == False:
     st.error('Username/password is incorrect')
-# elif authentication_status == None:
-#     st.warning('Please enter your username and password')
+elif authentication_status == None:
+    st.warning('Please enter your username and password')
 
 
 # if st.session_state['authentication_status']:
