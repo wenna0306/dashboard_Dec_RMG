@@ -8,6 +8,7 @@ from matplotlib.backends.backend_agg import RendererAgg
 matplotlib.use('agg')
 from st_btn_select import st_btn_select
 import streamlit_authenticator as stauth
+from wordcloud import WordCloud
 _lock = RendererAgg.lock
 
 # -----------------------------------------set page layout-------------------------------------------------------------
@@ -72,7 +73,7 @@ if authentication_status:
             return pd.read_excel(filename, header=1, index_col='Fault Number', usecols=cols, parse_dates=parse_dates)
 
 
-        df = fetch_file('Fault 2022-01-01 173831.xlsx')
+        df = fetch_file('Fault 2022-01-04 143501.xlsx')
 
         df.columns = df.columns.str.replace(' ', '_')
         df['Time_Acknowledged_mins'] = (df.Fault_Acknowledged_Date - df.Reported_Date)/pd.Timedelta(minutes=1)
@@ -299,6 +300,9 @@ if authentication_status:
         linewidth_xy_axis = 1
         linecolor_xy_axis = '#59656d'
 
+        # linechart
+        linecolor = '#96ae8d'
+        linewidth = 2
 
     #---------------------------------------Outstanding Faults-----------------------------------------------------
         st.markdown('##')
@@ -337,7 +341,9 @@ if authentication_status:
             st.plotly_chart(fig_outstanding_building, use_container_width=True)
 
         with fig_outstanding_category, _lock:
-            fig_outstanding_category = go.Figure(data=[go.Bar(x=x_outstanding_category, y=y_outstanding_category, orientation='v', text=y_outstanding_category)])
+            fig_outstanding_category = go.Figure(data=[go.Bar(x=x_outstanding_category, y=y_outstanding_category, orientation='v',
+                                                              text=y_outstanding_category, textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                                               textposition='auto', textangle=-45)])
             fig_outstanding_category.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
                                gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
             fig_outstanding_category.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=True, gridwidth=gridwidth,
@@ -358,7 +364,7 @@ if authentication_status:
 
         fig_daily = go.Figure(data=go.Scatter(x=x_daily, y=y_daily, mode='lines+markers+text', line=dict(color='#116a8c', width=3),
                                               text=y_daily, textfont=dict(family='sana serif', size=14, color='#c4fff7'), textposition='top center'))
-        fig_daily.add_hline(y=y_mean, line_dash='dot', line_color='#96ae8d', line_width=2, annotation_text='Average Line',
+        fig_daily.add_hline(y=y_mean, line_dash='dot', line_color=linecolor, line_width=linewidth, annotation_text='Average Line',
                                   annotation_position='bottom right', annotation_font_size=18, annotation_font_color='green')
         fig_daily.update_xaxes(title_text='Date', tickangle=-45, title_font_color=titlefontcolor, tickmode='linear', range=[1, 31],
                                            showgrid=False, gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
@@ -626,7 +632,7 @@ if authentication_status:
             st.plotly_chart(fig_recovered_category_high, use_container_width=True)
 
 
-    #---------------------------Fault vs Building Trade & Trade Category & Type of Fault----------------------------------
+ #---------------------------Fault vs Building Trade & Trade Category & Type of Fault----------------------------------
         st.markdown('##')
         st.markdown('##')
         st.markdown(html_card_subheader_Tier1, unsafe_allow_html=True)
@@ -967,7 +973,118 @@ if authentication_status:
             fig24.update_layout(title='Total Time Spent(hrs) vs Building Floor& Room-Top 20', plot_bgcolor=plot_bgcolor)
             st.plotly_chart(fig24, use_container_width=True)
 
+#------------------------------------Number of fault vs technician---------------------------------------
+        st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
+        st.markdown('##')
 
+        Abala = df3[df3.Remarks.str.contains('abala|Abala|A.bala|a.bala|A.Bala')].shape[0]
+        Allan = df3[df3.Remarks.str.contains('Allan|allan|allen|Allen|alan|alen')].shape[0]
+        Aru = df3[df3.Remarks.str.contains('Aru|aru')].shape[0]
+        Hossain = df3[df3.Remarks.str.contains('Hossain|hossain')].shape[0]
+        Ilayaraja = df3[df3.Remarks.str.contains('Ilayaraja|ilayaraja')].shape[0]
+        Isyamudin = df3[df3.Remarks.str.contains('Isyamudin|isyamudin|lsyamudin|Lsyamudin')].shape[0]
+        #Lifei = df3[df3.Remarks.str.contains('Lifei|lifei|Li Fei|Li fei|li fei')].shape[0]
+        Mani = df3[df3.Remarks.str.contains('Mani|mani')].shape[0]
+        Mingcai = df3[df3.Remarks.str.contains('Mingcai|mingcai|Ming Cai|Ming cai|ming cai')].shape[0]
+        Nazri = df3[df3.Remarks.str.contains('Nazri|nazri')].shape[0]
+        Satha = df3[df3.Remarks.str.contains('Satha|satha')].shape[0]
+        Senthil = df3[df3.Remarks.str.contains('Senthil|senthil')].shape[0]
+        Shanmu = df3[df3.Remarks.str.contains('Shanmu|shanmu')].shape[0]
+        Su = df3[df3.Remarks.str.contains('-Su|-su|- Su|- su')].shape[0]
+        Vbala = df3[df3.Remarks.str.contains('Vbala|vbala|V.bala|v.bala|V.Bala')].shape[0]
+
+        x_people = ['Abala', 'Allan', 'Aru', 'Hossain', 'Ilayaraja', 'Isyamudin', 'Mani', 'Mingcai', 'Nazri', 'Satha', 'Senthil', 'Shanmu', 'Su', 'Vbala']
+        y_people = [Abala, Allan, Aru, Hossain, Ilayaraja, Isyamudin, Mani, Mingcai, Nazri, Satha, Senthil, Shanmu, Su, Vbala]
+        y_people_sum = sum(y_people)
+
+        st.markdown(f"Total Fault = {y_people_sum}")
+
+        column01_people, column02_people, column03_people, column04_people, column05_people, column06_people, column07_people, \
+        column08_people, column09_people, column10_people, column11_people, column12_people, column13_people,column14_people, column15_people = st.columns(15)
+        with column01_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Abala</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Abala}</h2>", unsafe_allow_html=True)
+
+        with column02_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Allan</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Allan}</h2>", unsafe_allow_html=True)
+
+        with column03_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Aru</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Aru}</h2>", unsafe_allow_html=True)
+
+        with column04_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Hossain</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Hossain}</h2>", unsafe_allow_html=True)
+
+        with column05_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Ilayaraja</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Ilayaraja}</h2>", unsafe_allow_html=True)
+
+        with column06_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Isyamudin</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Isyamudin}</h2>", unsafe_allow_html=True)
+
+        # with column07_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Lifei</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Lifei}</h2>", unsafe_allow_html=True)
+
+        with column08_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mani</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mani}</h2>", unsafe_allow_html=True)
+
+        with column09_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mingcai</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mingcai}</h2>", unsafe_allow_html=True)
+
+        with column10_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Nazri</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Nazri}</h2>", unsafe_allow_html=True)
+
+        with column11_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Satha</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Satha}</h2>", unsafe_allow_html=True)
+
+        with column12_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Senthil</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Senthil}</h2>", unsafe_allow_html=True)
+
+        with column13_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Shanmu</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Shanmu}</h2>", unsafe_allow_html=True)
+
+        with column14_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Su</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Su}</h2>", unsafe_allow_html=True)
+
+        with column15_people, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Vbala</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Vbala}</h2>", unsafe_allow_html=True)
+
+        st.markdown('##')
+        st.markdown('##')
+        fig25, wc = st.columns(2)
+        with fig25, _lock:
+            fig25 = go.Figure(data=[go.Bar(x=x_people, y=y_people, orientation='v', text=y_people,
+                                           textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                           textposition='auto', textangle=-45)])
+            fig25.update_xaxes(title_text="Name", title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
+                               gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+                               linecolor=linecolor_xy_axis, tickangle=-45)
+            fig25.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
+                               gridwidth=gridwidth,
+                               gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+                               linecolor=linecolor_xy_axis)
+            fig25.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor,
+                                marker_line_width=markerlinewidth, opacity=opacity03)
+            fig25.update_layout(title='Number of Fault vs Name', plot_bgcolor=plot_bgcolor)
+            st.plotly_chart(fig25, use_container_width=True)
+
+        with wc, _lock:
+            stopwords = ['done', 'Done', 'Checked', 'check', 'Repaired', 'fixed', 'Fixed', 'Found', 'found', 'from', 'have',
+                         'in', 'on', 'at', 'make', 'it', 'the', 'and', 'to', 'for', 'need']
+            wc = WordCloud(background_color='#0e1117', stopwords= stopwords, colormap='Set2', width = 1920, height = 1200).generate(str(df2['Action(s)_Taken'].values))
+            st.image(wc.to_array(), width=650)
 # =======================================Schedule===================================================================
 
 
